@@ -488,17 +488,25 @@ end:
 int op_create(const char *path, int flag) {
     struct inode *tmp_inode1 = malloc(sizeof(struct inode));	   
     struct inode *tmp_inode2 = malloc(sizeof(struct inode));
-	/*make two new pointers to inode, though I don't know why
-	 */
+	/* make two new pointers to inode, though I don't know why
+	 * memory allocable for the inode
+	 * without init
+	 * */
     int i , res, ino, blkno, *ino_array, *block_array;
     char *path_tmp, *parentpath, *name;
-	/*declear temperary path, parent path, and name ?why?
+	/* declear temperary path, parent path, and name 
+	 * why?
 	 * without init
 	 * */
     BYTE buff[BLOCK_BYTES];
-	/*undefined BLOCK_BYTES*/
+	/* undefined BLOCK_BYTES
+	 * BYTE type array buff
+	 * why
+	 * */
     memset(buff, 0x00, BLOCK_BYTES);
-	/*create space in mem for BYTE array buff*/
+	/* create space in mem for BYTE array buff
+	 * so,make sure it's in memory at the address of 0x00
+	 * */
     struct item *p_item;
     ino_array = &ino;
     block_array = &blkno;

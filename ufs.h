@@ -7,11 +7,11 @@
 #define BYTE unsigned char
 
 struct super_block{
-    int rootdir_ino;
-    int block_bitmap_start;
-    int inode_bitmap_start;
-    int inode_table_start; 
-    int data_block_start;
+	int rootdir_ino;
+	int block_bitmap_start;
+	int inode_bitmap_start;
+	int inode_table_start; 
+	int data_block_start;
 };        
          
 struct inode{

@@ -1,0 +1,76 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BLOCK_BITMAP_SIZE	ufs.h	/^#define BLOCK_BITMAP_SIZE /;"	d
+BLOCK_BYTES	ufs.h	/^#define BLOCK_BYTES /;"	d
+BLOCK_ITEMS	ufs.h	/^#define BLOCK_ITEMS /;"	d
+BYTE	ufs.h	/^#define BYTE /;"	d
+FUSE_USE_VERSION	ufs.c.h	/^#define FUSE_USE_VERSION /;"	d
+INODE_BITMAP_SIZE	ufs.h	/^#define INODE_BITMAP_SIZE /;"	d
+INODE_TABLE_SIZE	ufs.h	/^#define INODE_TABLE_SIZE /;"	d
+OP_H	op.h	/^#define OP_H$/;"	d
+SUPER_BLOCK_SIZE	ufs.h	/^#define SUPER_BLOCK_SIZE /;"	d
+block_bitmap_start	ufs.h	/^    int block_bitmap_start;$/;"	m	struct:super_block
+data_block_start	ufs.h	/^    int data_block_start;$/;"	m	struct:super_block
+datablock_no	ufs.h	/^    int datablock_no[MAX_FILESIZE];$/;"	m	struct:inode
+file_size	ufs.h	/^    int file_size;$/;"	m	struct:inode
+filename	ufs.h	/^    char filename[MAX_FILENAME];$/;"	m	struct:item
+flag	ufs.h	/^    int flag;     \/*file=1:directory,file=0:file*\/$/;"	m	struct:inode
+fs_create	ufs.c.h	/^static int fs_create(const char *path, mode_t mode, struct fuse_file_info *fi) {$/;"	f
+fs_getattr	ufs.c.h	/^static int fs_getattr(const char *path, struct stat *stbuf)$/;"	f
+fs_mkdir	ufs.c.h	/^static int fs_mkdir(const char *path, mode_t mode) {$/;"	f
+fs_mknod	ufs.c.h	/^static int fs_mknod(const char *path, mode_t mode, dev_t dev) {$/;"	f
+fs_open	ufs.c.h	/^static int fs_open(const char *path, struct fuse_file_info *fi) {$/;"	f
+fs_opendir	ufs.c.h	/^static int fs_opendir(const char *path, struct fuse_file_info *fi) {$/;"	f
+fs_oper	ufs.c.h	/^static struct fuse_operations fs_oper = {$/;"	v	typeref:struct:fuse_operations
+fs_read	ufs.c.h	/^static int fs_read(const char *path, char *buf, size_t size, off_t off, struct fuse_file_info *fi){$/;"	f
+fs_readdir	ufs.c.h	/^static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,$/;"	f
+fs_rename	ufs.c.h	/^static int fs_rename(const char *oldpath, const char *newpath) {$/;"	f
+fs_rmdir	ufs.c.h	/^static int fs_rmdir(const char *path) {$/;"	f
+fs_unlink	ufs.c.h	/^static int fs_unlink(const char *path) {$/;"	f
+fs_write	ufs.c.h	/^static int fs_write(const char *path, const char *buf, size_t size, off_t off, struct fuse_file_info *fi) {$/;"	f
+inode	ufs.h	/^struct inode{$/;"	s
+inode_bitmap_start	ufs.h	/^    int inode_bitmap_start;$/;"	m	struct:super_block
+inode_no	ufs.h	/^    int inode_no;$/;"	m	struct:inode
+inode_no	ufs.h	/^    int inode_no;$/;"	m	struct:item
+inode_table_start	ufs.h	/^    int inode_table_start; $/;"	m	struct:super_block
+item	ufs.h	/^struct item{ $/;"	s
+item_flag	ufs.h	/^    int item_flag;  \/*free 0;busy 1*\/$/;"	m	struct:item
+main	init.c.h	/^int  main(void){$/;"	f
+main	ufs.c.h	/^int main(int argc, char *argv[]){$/;"	f
+name	ufs.h	/^    char name[MAX_FILENAME];$/;"	m	struct:inode
+op_create	op.c	/^int op_create(const char *path, int flag) {$/;"	f
+op_create	op.h	/^extern int op_create(const char *path, int flag);$/;"	p
+op_div_parentpath	op.c	/^int op_div_parentpath(char *path, char **parentpath, char **name) {$/;"	f
+op_div_parentpath	op.h	/^extern int op_div_parentpath(char *path, char **parentpath, char **name);$/;"	p
+op_div_subpath	op.c	/^int op_div_subpath(char *path, char **name, char **subpath) {$/;"	f
+op_div_subpath	op.h	/^extern int op_div_subpath(char *path, char **name, char **subpath);$/;"	p
+op_isempty	op.c	/^int op_isempty(const char *path) {$/;"	f
+op_isempty	op.h	/^extern int op_isempty(const char *path);$/;"	p
+op_isexist	op.c	/^int op_isexist(const char *path, const char *name) {$/;"	f
+op_isexist	op.h	/^extern int op_isexist(const char *path, const char *name);$/;"	p
+op_path_parse	op.c	/^int op_path_parse(const char *path, struct inode *tmp) {$/;"	f
+op_path_parse	op.h	/^extern int op_path_parse(const char *path, struct inode *tmp);$/;"	p
+op_readblock	op.c	/^int op_readblock(int blockno, BYTE buff[BLOCK_BYTES]) {$/;"	f
+op_readblock	op.h	/^extern int op_readblock(int blockno, BYTE buff[BLOCK_BYTES]);$/;"	p
+op_readinode	op.c	/^int op_readinode(int inodeno, struct inode *tmp) {$/;"	f
+op_readinode	op.h	/^extern int op_readinode(int inodeno, struct inode *tmp);$/;"	p
+op_rm	op.c	/^int op_rm(const char *path, int flag) {$/;"	f
+op_rm	op.h	/^extern int op_rm(const char *path, int flag);$/;"	p
+op_search_freeblock	op.c	/^int op_search_freeblock(int n, int *block_array) {$/;"	f
+op_search_freeblock	op.h	/^extern int op_search_freeblock(int n, int *block_array);$/;"	p
+op_search_freeinode	op.c	/^int op_search_freeinode(int n, int *inode_array) {$/;"	f
+op_search_freeinode	op.h	/^extern int op_search_freeinode(int n, int *inode_array);$/;"	p
+op_set_blockstatus	op.c	/^int op_set_blockstatus(int blockno, int status) {$/;"	f
+op_set_blockstatus	op.h	/^extern int op_set_blockstatus(int blockno, int status);$/;"	p
+op_set_inodestatus	op.c	/^int op_set_inodestatus(int inodeno, int status) {$/;"	f
+op_set_inodestatus	op.h	/^extern int op_set_inodestatus(int inodeno, int status);$/;"	p
+op_writeblock	op.c	/^int op_writeblock(int blockno, BYTE buff[BLOCK_BYTES]) {$/;"	f
+op_writeblock	op.h	/^extern int op_writeblock(int blockno, BYTE buff[BLOCK_BYTES]);$/;"	p
+op_writeinode	op.c	/^int op_writeinode(int inodeno, struct inode *tmp) {$/;"	f
+op_writeinode	op.h	/^extern int op_writeinode(int inodeno, struct inode *tmp);$/;"	p
+rootdir_ino	ufs.h	/^    int rootdir_ino;$/;"	m	struct:super_block
+super_block	ufs.h	/^struct super_block{$/;"	s
