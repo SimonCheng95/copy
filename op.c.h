@@ -274,14 +274,15 @@ int op_path_parse(const char *path, struct inode *tmp) {
 		   pos = 0;
 		   while (pos < BLOCK_ITEMS) {
 			   if (p_item->item_flag == 1) {
-				   if (strcmp(name, p_item->filename) != 0) {
-					   p_item++;
-					   pos++;
-				   } else {
-					   op_readinode(p_item->inode_no, tmp);
+				   if (strcmp(name, p_item->filename) == 0) {
+				   	   op_readinode(p_item->inode_no, tmp);
 					   //syslog(LOG_INFO, "find it: tmp->inode_no=%d,tmp->name=%s,tmp->datablock_no[0]=%d",
 					   //					 tmp->inode_no, tmp->name, tmp->datablock_no[0]);
-					   goto outloop;
+					   goto l;
+					 
+				   } else {
+					   p_item++;
+					   pos++;  
 				   }
 			   } else {
 				   p_item++;
@@ -293,7 +294,7 @@ int op_path_parse(const char *path, struct inode *tmp) {
 	   res = -1;
 	   //syslog(LOG_INFO, "can't parse the path");
 	   goto end;
-outloop:
+l:
 	   if (subpath == NULL) {
 		   res = 0;
 		   goto end;
@@ -485,118 +486,239 @@ end:
 }
 
 int op_create(const char *path, int flag) {
-    //syslog(LOG_INFO, "op_create  path=%s, flag=%d", path, flag);
     struct inode *tmp_inode1 = malloc(sizeof(struct inode));
     struct inode *tmp_inode2 = malloc(sizeof(struct inode));
-    int i, pos, res, ino, blkno, *ino_array, *block_array;
+
+    int i , res, ino, blkno, *ino_array, *block_array;
     char *path_tmp, *parentpath, *name;
     BYTE buff[BLOCK_BYTES];
+    memset(buff, 0x00, BLOCK_BYTES);
     struct item *p_item;
+    ino_array = &ino;
+    block_array = &blkno;
     if (tmp_inode1 == NULL || tmp_inode2 == NULL) {
         res = -1;
         goto end;
     }
-    if(flag != 0 && flag != 1){
+    if (flag != 0 && flag != 1) {
         res = -1;
         goto end;
     }
     path_tmp = strdup(path);
     op_div_parentpath(path_tmp, &parentpath, &name);
-    //syslog(LOG_INFO, "op_create  name=%s,  parentpath=%s", name, parentpath);
     if ((strlen(name) + 1) > MAX_FILENAME) {
         res = -ENAMETOOLONG;
-        syslog(LOG_INFO, "the filename is too long to create!");
         goto end;
     }
-    if(op_isexist(path, name) == 1) {
+    if (op_isexist(path, name) == 1) {
         res = -EEXIST;
-        syslog(LOG_INFO, "the filename exists!");
         goto end;
     }
     op_path_parse(parentpath, tmp_inode1);
-    //syslog(LOG_INFO, "parent inode ino=%d,flag=%d,name=%s,file_size=%d,datablk[0]=%d",
-    //                       tmp_inode1->inode_no, tmp_inode1->flag, tmp_inode1->name, tmp_inode1->file_size, 
-    //                            tmp_inode1->datablock_no[0]);
-    ino_array = &ino;
-    block_array = &blkno;
-    i = 0;
-    while (tmp_inode1->datablock_no[i] != -1 && i < MAX_FILESIZE) {
-        op_readblock(tmp_inode1->datablock_no[i], buff);
-        p_item = (struct item*)buff;
-        pos = 0;
-        while (pos < BLOCK_ITEMS) {
-            if (p_item->item_flag == 0) {
-                if (op_search_freeinode(1, ino_array) == -1) {
-                    res = -1;
-                    goto end;
+    //syslog(LOG_INFO, "parent inode ino=%d,size=%d,datablkno=%d", tmp_inode1->inode_no, tmp_inode1->size, tmp_inode1->datablock_no[0]);  
+    if (tmp_inode1->inode_no == 0) {
+        i = 0;
+_loop1:
+        //syslog(LOG_INFO, "add itemds");
+        while (i < MAX_FILESIZE - 1) {
+            if (tmp_inode1->datablock_no[i] != -1) {
+                //syslog(LOG_INFO, "tmp_inode1 datablkno=%d", tmp_inode1->datablock_no[i]);
+                op_readblock(tmp_inode1->datablock_no[i], buff);
+                p_item = (struct item*)buff;
+                int pos = 0, count = 0;
+                while (pos < BLOCK_ITEMS) {
+                    if (p_item->item_flag == 1) {
+                        count++;
+                        p_item++;
+                        pos++;
+                    } else {
+                        pos++;
+                        p_item++;
+                    }
                 }
-                op_set_inodestatus(*ino_array, 1);
-                //syslog(LOG_INFO, "ino_array=%d", *ino_array);
-                tmp_inode1->file_size += sizeof(struct item);
-                op_writeinode(tmp_inode1->inode_no, tmp_inode1);
-                //syslog(LOG_INFO, "afte update inode->size=%d", tmp_inode1->file_size);
-                p_item->item_flag = 1;
-                p_item->inode_no = *ino_array;
-                strcpy(p_item->filename, name);
-                op_writeblock(tmp_inode1->datablock_no[i], buff);
-                tmp_inode2->inode_no = *ino_array;
-                tmp_inode2->flag = flag;
-                strcpy(tmp_inode2->name, name);
-                if(flag == 0) {
-                    tmp_inode2->file_size = 0;
-                    int w = 0;
-                    while(w < MAX_FILESIZE) {
-                        tmp_inode2->datablock_no[w] = -1;
-                        w++;
+                //syslog(LOG_INFO, "count=%d,pos=%d", count, pos);
+                if (count < BLOCK_ITEMS) {
+                    //op_readblock(tmp_inode1->datablock_no[i], buff);
+                    p_item = (struct item*)buff;
+                    int num = 0;
+                    while (num < BLOCK_ITEMS) {
+                        if (p_item->item_flag == 0){
+                            //syslog(LOG_INFO, "find a free item");
+                            op_search_freeinode(1, ino_array);
+                            tmp_inode1->size += sizeof(struct item);
+                            op_writeinode(tmp_inode1->inode_no, tmp_inode1);
+
+							p_item->item_flag = 1;
+							p_item->inode_no = *ino_array;
+							strcpy(p_item->filename, name);
+							//syslog(LOG_INFO, "flag=%d,inode_no=%d,name=%s", p_item->item_flag, p_item->inode_no, p_item->filename);
+							op_writeblock(tmp_inode1->datablock_no[i], buff);
+
+							tmp_inode2->inode_no = *ino_array;
+							tmp_inode2->flag = flag;
+							tmp_inode2->size = 0;
+							int w = 0;
+							while (w < MAX_FILESIZE) {
+								tmp_inode2->datablock_no[w] = -1;
+								w++;
+							}
+							op_writeinode(*ino_array, tmp_inode2);
+							//syslog(LOG_INFO, "inodeno=%d, flag=%d, size=%d", tmp_inode2->inode_no, tmp_inode2->flag, tmp_inode2->size);
+
+							/*BYTE n_buff[BLOCK_BYTES];
+							op_readblock(tmp_inode1->datablock_no[0], n_buff);
+							struct item *n_item;  int x = 0;
+							n_item = (struct item *)n_buff;
+							while(x < BLOCK_ITEMS) {
+								syslog(LOG_INFO, "after write itemname=%s", n_item->filename);
+								n_item++;
+								x++;
+							}	*/
+
+							res = 0;
+							goto end;
+						} else {
+							p_item++;
+							num++;
+
+						}
 					}
-				}else {
-					op_search_freeblock(1, block_array);
-					//syslog(LOG_INFO, "op_create allocated blkno=%d", *block_array);
-					tmp_inode2->file_size = 0;
-					tmp_inode2->datablock_no[0] = *block_array;
-					int y = 1;
-					while(y < MAX_FILESIZE) {
-						tmp_inode2->datablock_no[y] = -1;
-						y++;
+				} else {
+					if (tpm_inode1->datablock_no[i + 1] != -1) {
+						i++;
+						goto loop;
+					} else {
+						op_search_freeblock(1, block_array);
+						tmp_inode1->datablock_no[i + 1] = *block_array;
+						op_writeinode(tmp_inode1->inode_no, tmp_inode1);
 					}
 				}
-				op_writeinode(*ino_array, tmp_inode2);
-				
-				//struct inode* test = malloc(sizeof(struct inode));
-				//op_readinode(*ino_array, test);
-				//syslog(LOG_INFO, "test inode_no=%d,flag=%d,name=%s,size=%d,datablkno[0]=%d", 
-				//			 test->inode_no, test->flag, test->name, test->file_size, test->datablock_no[0]);
-				/*
-				BYTE n_buff[BLOCK_BYTES];
-				op_readblock(tmp_inode1->datablock_no[0], n_buff);
-				struct item *n_item;  int x = 0;
-				n_item = (struct item *)n_buff;
-				while(x < BLOCK_ITEMS) {
-					syslog(LOG_INFO, "after write itemname=%s", n_item->filename);
-					n_item++;
+			}
+			i++;
+		}
+	} else {
+		i = 0;
+_loop2:
+		while (i < MAX_FILESIZE - 1) {
+			if (tmp_inode1->datablock_no[i] == -1) {
+				op_search_freeblock(1, block_array);
+				tmp_inode1->datablock_no[i] = *block_array;
+				tmp_inode1->size += sizeof(struct item);
+				op_writeinode(tmp_inode1->inode_no, tmp_inode1);
+
+				op_search_freeinode(1, ino_array);
+				op_readblock(*block_array, buff);
+				p_item = (struct item*)buff;
+				p_item->item_flag = 1;
+				strcpy(p_item->filename, name);
+				p_item->inode_no = *ino_array;
+				op_writeblock(*block_array, buff);
+
+				tmp_inode2->inode_no = *ino_array;
+				tmp_inode2->flag = flag;
+				tmp_inode2->size = 0;
+				int x = 0;
+				while (x < MAX_FILESIZE) {
+					tmp_inode2->datablock_no[x] = -1;
 					x++;
-				} */
+				}
+				op_writeinode(*ino_array, tmp_inode2);
 				res = 0;
 				goto end;
-
 			} else {
-				pos++;
-				p_item++;
-			}
-		}
-		i++;
-	}
-	res = -1;
-	//syslog(LOG_INFO, "failed to create....");
+				int _pos = 0, _count = 0;
+				op_readblock(tmp_inode1->datablock_no[i], buff);
+				p_item = (struct item*)buff;
+				while (_pos < BLOCK_ITEMS) {
+					if (p_item->item_flag == 1) {
+						_count++;
+						_pos++;
+						p_item++;
+					} else {
+						_pos++;
+						p_item++;
+					}
+				}
+
+			if (_count < BLOCK_ITEMS) {
+				p_item = (struct item*)buff;
+				int _num = 0;
+				while (_num < BLOCK_ITEMS) {
+					if (p_item->item_flag == 0) {
+						p_item->item_flag = 1;
+						op_search_freeinode(1, ino_array);
+						p_item->inode_no = *ino_array;
+						strcpy(p_item->filename, name);
+						op_writeblock(tmp_inode1->datablock_no[i], buff);
+						tmp_inode1->size += sizeof(struct item);
+						op_writeinode(tmp_inode1->inode_no, tmp_inode1);
+
+						tmp_inode2->inode_no = *ino_array;
+						tmp_inode2->size = 0;
+						tmp_inode2->flag = flag;
+						int z = 0;
+						while (z < MAX_FILESIZE) {
+							tmp_inode2->datablock_no[z] = -1;
+							z++;
+						}
+						op_writeinode(*ino_array, tmp_inode2);
+						res = 0;
+						goto end;
+					} else {
+						p_item++;
+						_num++;
+					}
+				}
+			} else {
+					if (tpm_inode1->datablock_no[i + 1] != -1) {
+						i++;
+						goto loop;
+					} else {
+						op_search_freeblock(1, block_array);
+						tmp_inode1->datablock_no[i + 1] = *block_array;
+						op_writeinode(tmp_inode1->inode_no, tmp_inode1);
+					}
+                }
+            }
+            i++;
+        }
+    }
+    res = -1;
 end:
-	free(tmp_inode1);
-	free(tmp_inode2);
-	tmp_inode1 = NULL;
-	tmp_inode2 = NULL;
-	return res;
+    free(tmp_inode1);
+    free(tmp_inode2);
+    free(path_tmp);
+    return res;
 }
 
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
